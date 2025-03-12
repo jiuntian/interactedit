@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="InteractEdit: Zero-Shot Editing of Human-Object Interactions in Images">
+    <meta name="keywords" content="InteractEdit">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>InteractEdit: Zero-Shot Editing of Human-Object Interactions in Images</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.3/css/bulma.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flickity/3.0.0/flickity.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" integrity="sha512-P9vJUXK+LyvAzj8otTOKzdfF1F3UYVl13+F8Fof8/2QNb8Twd6Vb+VD52I7+87tex9UXxnzPgWA3rH96RExA7A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" integrity="sha512-sVSECYdnRMezwuq5uAjKQJEcu2wybeAPjU4VJQ9pCRcCY4pIpIw4YMHIOQ0CypfwHRvdSPbH++dA3O4Hihm/LQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" integrity="sha512-tk4nGrLxft4l30r9ETuejLU0a3d7LwMzj0eXjzc16JQj+5U1IeVoCuGLObRDc3+eQMUcEQY1RIDPGvuA7SNQ2w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+    <link rel="stylesheet" href="./static/css/index.css">
+    <!-- <link rel="icon" href="./static/images/icon.png"> -->
+
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 2px solid #F1F4F5;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(3n - 1) {
+            background-color: #F1F4F5;
+        }
+
+        tr:nth-child(3n) {
+            border: 2px solid #FFFFFF;
+        }
+    </style>
+
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/fontawesome.min.js" integrity="sha512-ywaT8M9b+VnJ+jNG14UgRaKg+gf8yVBisU2ce+YJrlWwZa9BaZAE5GK5Yd7CBcP6UXoAnziRQl40/u/qwVZi4Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+    <!-- Header (name, affilations, links)-->
+    <section class="hero">
+        <div class="hero-body">
+            <div class="container is-max-desktop">
+                <div class="columns is-centered">
+                    <div class="column has-text-centered">
+                        <h1 class="title is-1 publication-title">InteractEdit: Zero-Shot Editing of <br>Human-Object Interactions in Images</h1>
+                        <div class="is-size-5 publication-authors">
+                            <span class="author-block">
+                                <a href="https://jiuntian.com/">Jiun Tian Hoe</a><sup>1</sup>,</span>
+                            <span class="author-block">
+                                <a href="https://scholar.google.com/citations?user=zo6ni_gAAAAJ">Weipeng Hu</a><sup>1</sup></span>
+                            <span class="author-block">
+                                <a href="https://scholar.google.com/citations?user=eyQteL0AAAAJ">Wei Zhou</a><sup>2&dagger;</sup>,</span>
+                            <span class="author-block">
+                                <a href="https://scholar.google.com/citations?user=-W3ZltsAAAAJ">Chao Xie</a><sup>3&dagger;</sup>,</span>
+                            <span class="author-block">
+                                <a href="https://ziweiwangthu.github.io/">Ziwei Wang</a><sup>1</sup>,</span>
+                            <br>
+                            <span class="author-block">
+                                <a href="http://cs-chan.com">Chee Seng Chan</a><sup>4</sup>,</span>
+                            <span class="author-block">
+                                <a href="https://personal.ntu.edu.sg/exdjiang/">Xudong Jiang</a><sup>1</sup>,</span>
+                            <span class="author-block">
+                                <a href="https://personal.ntu.edu.sg/eyptan/">Yap-Peng Tan</a><sup>1</sup></span>
+                            <!--            <br>-->
+                        </div>
+
+                        <div class="is-size-6 publication-authors">
+                            <span class="author-block"><sup>1</sup>Nanyang Technological University,</span>&nbsp;
+                            <span class="author-block"><sup>2</sup>Sun Yat-sen University,</span>&nbsp;
+                            <span class="author-block"><sup>3</sup>Nanjing Forestry University,</span>&nbsp;
+                            <span class="author-block"><sup>4</sup>Universiti Malaya</span>
+                        </div>
+                        <div class="is-size-6 publication-authors">
+                            <span class="author-block"><sup>&dagger;</sup>Work done at Nanyang Technological University.</span>
+                        </div>
+
+                        <div class="column has-text-centered">
+                            <div class="publication-links">
+                                <span class="link-block">
+                                    <a href="https://arxiv.org/abs/TODO"
+                                        class="external-link button is-normal is-rounded is-dark">
+                                        <span class="icon">
+                                            <i class="ai ai-arxiv"></i>
+                                        </span>
+                                        <span>arXiv</span>
+                                    </a>
+                                </span>
+                                <!-- Code Link. -->
+                                <span class="link-block">
+                                    <a href="https://github.com/jiuntian/interactedit"
+                                        class="external-link button is-normal is-rounded is-dark">
+                                        <span class="icon">
+                                            <i class="fab fa-github"></i>
+                                        </span>
+                                        <span>Code (Coming Soon)</span>
+                                    </a>
+                                </span>
+                                <!-- Demo Link. -->
+                                <!-- <span class="link-block">
+                                    <a href="https://huggingface.co/spaces/interactdiffusion/interactdiffusion" class="external-link button is-normal is-rounded is-dark">
+                                        <span class="icon">
+                                            <i class="fa fa-terminal"></i>
+                                        </span>
+                                        <span>HuggingFace Demo</span>
+                                    </a>
+                                </span> -->
+                                <!-- Diffusers Link. -->
+                                <!-- <span class="link-block">
+                                    <a href="https://github.com/jiuntian/sd-webui-interactdiffusion" class="external-link button is-normal is-rounded is-dark">
+                                        <span class="icon">
+                                            <i class="fa fa-puzzle-piece"></i>
+                                        </span>
+                                        <span>SD WebUI Extension</span>
+                                    </a>
+                                </span> -->
+                                <!-- Video Link. -->
+                                <span class="link-block">
+                                    <a href="https://youtu.be/?"
+                                        class="external-link button is-normal is-rounded is-dark">
+                                        <span class="icon">
+                                            <i class="fab fa-youtube"></i>
+                                        </span>
+                                        <span>Video (TODO)</span>
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="is-size-5">
+                            <p>TL;DR: We enables zero-shot human-object interaction edit</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Teaser -->
+    <section class="hero teaser">
+        <div class="container is-max-desktop has-text-justified">
+            <div class="hero-body">
+                <img id="teaser" autoplay muted loop playsinline height="100%" src="./static/res/teaser.jpg"
+                    style="width:100%;">
+                    <!-- has-text-centered -->
+                <p class="subtitle " style="font-size: 16px;"> 
+                    Existing methods overly preserve structural details from the source image, limiting their ability to
+                     accommodate the substantial non-rigid changes required for effective interaction edits. In contrast, 
+                     Our proposed <span class="dnerf">InteractEdit</span> employs regularization techniques to constrain 
+                     model updates, <b>preserving pretrained target interaction knowledge</b> and enabling <i>zero-shot 
+                    interaction edits</i> while <b>maintaining identity consistency</b>.
+                </p>
+            </div>
+        </div>
+    </section>
+    <!-- Results -->
+    <section class="section" id="Results">
+        <div class="container is-max-desktop content">
+            <!-- <h2 class="title">Results</h2> -->
+            <section class="method">
+                <div class="container">
+                    <div class="">  <!--hero-body-->
+                        <h3 class="title">Qualitative Results</h3>
+                        <h4 class="title">1. Sample of Interaction Edits</h4>
+                        <p><span style="color:#F97316;">Orange</span> indicates <span style="color:#F97316;">target interaction</span>.</p>
+                        
+                        <!-- example 1 -->
+                        <div class="container columns is-centered">
+                            <div class="column
+                             is-one-quarter-desktop
+                             is-one-quarter-tablet 
+                             is-one-half-mobile
+                              exp-img"> 
+                                <img src="./static/res/cxk/src.jpg"/>
+                                <p class="has-text-centered"> dribble ball </p>
+                            </div>
+                            <div class="column">
+                                <div class="main-carousel"
+                                data-flickity='{ 
+                                    "cellAlign": "center",
+                                    "contain": true,
+                                    "freeScroll": true,
+                                    "wrapAround": true,
+                                    "autoPlay": true,
+                                    "imagesLoaded": true,
+                                    "lazyLoad": true
+                                }'>
+                                    <div class="carousel-cell exp-img">
+                                        <img src="./static/res/cxk/hold.webp"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> hold ball </p>
+                                    </div>
+                                    <div class="carousel-cell exp-img">
+                                        <img src="./static/res/cxk/kick.jpeg"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> kick ball </p>
+                                    </div>
+                                    <div class="carousel-cell exp-img">
+                                        <img src="./static/res/cxk/throw.jpeg"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> throw ball </p>
+                                    </div>
+                                    <div class="carousel-cell exp-img">
+                                        <img src="./static/res/cxk/hold2.webp"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> hold ball </p>
+                                    </div>
+                                    <div class="carousel-cell exp-img">
+                                        <img src="./static/res/cxk/kick2.jpg"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> kick ball </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p style="margin-bottom: 30px;"></p>
+                        <!-- example 2 -->
+                        <div class="container columns is-centered">
+                            <div class="column
+                             is-one-quarter-desktop
+                             is-one-quarter-tablet 
+                             is-one-half-mobile
+                              exp-img"> 
+                                <img src="./static/res/15541/src.jpg"/>
+                                <p class="has-text-centered"> hold skateboard </p>
+                            </div>
+                            <div class="column">
+                                <div class="main-carousel"
+                                data-flickity='{ 
+                                    "cellAlign": "center",
+                                    "contain": true,
+                                    "freeScroll": true,
+                                    "wrapAround": true,
+                                    "autoPlay": true,
+                                    "imagesLoaded": true,
+                                    "lazyLoad": true
+                                }'
+                                >
+                                    <div class="carousel-cell exp-img">
+                                        <img src="./static/res/15541/siton.jpg"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> sit on skateboard </p>
+                                    </div>
+                                    <div class="carousel-cell exp-img">
+                                        <img src="./static/res/15541/jump.jpg"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> jump skateboard </p>
+                                    </div>
+                                    <div class="carousel-cell exp-img">
+                                        <img src="./static/res/15541/ride.jpg"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> ride skateboard </p>
+                                    </div>
+                                    <div class="carousel-cell exp-img">
+                                        <img src="./static/res/15541/jump2.jpg"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> jump skateboard </p>
+                                    </div>
+                                    <div class="carousel-cell exp-img">
+                                        <img src="./static/res/15541/ride2.jpg"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> ride skateboard </p>
+                                    </div>
+                                    <div class="carousel-cell exp-img">
+                                        <img src="./static/res/15541/jump3.jpg"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> jump skateboard </p>
+                                    </div>
+                                    <div class="carousel-cell exp-img">
+                                        <img src="./static/res/15541/ride3.jpg"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> ride skateboard </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p style="margin-bottom: 30px;"></p>
+
+                        <h4 class="title">2. Editing Interactions Compared to Other Methods</h4>
+                        <p><span style="color:#F97316;">Orange</span> indicates <span style="color:#F97316;">target interaction</span>.</p>
+                        <!-- <img id="dream_booth" autoplay muted loop playsinline height="100%"
+                            src="./static/res/qualitative.jpg" style="width:100%;height:100%;" alt="Qualitative results">
+
+                        <p style="margin-bottom: 60px;"></p> -->
+                        
+                        <!-- compare 1 -->
+                        <div class="container columns is-centered">
+                            <div class="column
+                             is-one-quarter-desktop
+                             is-one-quarter-tablet
+                             compare-img">
+                                <div class="columns is-mobile static-group">
+                                    <div class="column">
+                                        <p class="has-text-centered"> Source Image </p>
+                                        <img src="./static/res/compare/x1_y1.jpg"/>
+                                        <p class="has-text-centered"> walk dog </p>
+                                    </div>
+                                    <div class="column">
+                                        <p class="has-text-centered"> Ours </p>
+                                        <img src="./static/res/compare/x9_y1.jpg"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> wash dog </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <div class="main-carousel"
+                                data-flickity='{ 
+                                    "cellAlign": "left",
+                                    "contain": true,
+                                    "freeScroll": true,
+                                    "wrapAround": true,
+                                    "autoPlay": true,
+                                    "imagesLoaded": true,
+                                    "lazyLoad": true
+                                }'>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> NTI </p>
+                                        <img src="./static/res/compare/x2_y1.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> InstructPix2Pix </p>
+                                        <img src="./static/res/compare/x3_y1.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> SVDiff </p>
+                                        <img src="./static/res/compare/x4_y1.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> InfEdit </p>
+                                        <img src="./static/res/compare/x5_y1.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> CDS </p>
+                                        <img src="./static/res/compare/x6_y1.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> TurboEdit </p>
+                                        <img src="./static/res/compare/x7_y1.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> Break-A-Scene </p>
+                                        <img src="./static/res/compare/x8_y1.jpg"/>
+                                    </div>
+                                    <!-- q2 no need, too much-->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- compare 2 -->
+                        <div class="container columns is-centered">
+                            <div class="column
+                             is-one-quarter-desktop
+                             is-one-quarter-tablet
+                             compare-img">
+                                <div class="columns is-mobile static-group">
+                                    <div class="column">
+                                        <p class="has-text-centered"> Source Image </p>
+                                        <img src="./static/res/compare/x1_y2.jpg"/>
+                                        <p class="has-text-centered"> walk dog </p>
+                                    </div>
+                                    <div class="column">
+                                        <p class="has-text-centered"> Ours </p>
+                                        <img src="./static/res/compare/x9_y2.jpg"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> hug dog </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <div class="main-carousel"
+                                data-flickity='{ 
+                                    "cellAlign": "left",
+                                    "contain": true,
+                                    "freeScroll": true,
+                                    "wrapAround": true,
+                                    "autoPlay": true,
+                                    "imagesLoaded": true,
+                                    "lazyLoad": true
+                                }'>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> NTI </p>
+                                        <img src="./static/res/compare/x2_y2.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> InstructPix2Pix </p>
+                                        <img src="./static/res/compare/x3_y2.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> SVDiff </p>
+                                        <img src="./static/res/compare/x4_y2.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> InfEdit </p>
+                                        <img src="./static/res/compare/x5_y2.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> CDS </p>
+                                        <img src="./static/res/compare/x6_y2.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> TurboEdit </p>
+                                        <img src="./static/res/compare/x7_y2.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> Break-A-Scene </p>
+                                        <img src="./static/res/compare/x8_y2.jpg"/>
+                                    </div>
+                                    <!-- q2 no need, too much-->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- compare 3 -->
+                        <div class="container columns is-centered">
+                            <div class="column
+                             is-one-quarter-desktop
+                             is-one-quarter-tablet
+                             compare-img">
+                                <div class="columns is-mobile static-group">
+                                    <div class="column">
+                                        <p class="has-text-centered"> Source Image </p>
+                                        <img src="./static/res/compare/x1_y3.jpg"/>
+                                        <p class="has-text-centered"> blow cake </p>
+                                    </div>
+                                    <div class="column">
+                                        <p class="has-text-centered"> Ours </p>
+                                        <img src="./static/res/compare/x9_y3.jpg"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> hold cake </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <div class="main-carousel"
+                                data-flickity='{ 
+                                    "cellAlign": "left",
+                                    "contain": true,
+                                    "freeScroll": true,
+                                    "wrapAround": true,
+                                    "autoPlay": true,
+                                    "imagesLoaded": true,
+                                    "lazyLoad": true
+                                }'>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> NTI </p>
+                                        <img src="./static/res/compare/x2_y3.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> InstructPix2Pix </p>
+                                        <img src="./static/res/compare/x3_y3.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> SVDiff </p>
+                                        <img src="./static/res/compare/x4_y3.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> InfEdit </p>
+                                        <img src="./static/res/compare/x5_y3.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> CDS </p>
+                                        <img src="./static/res/compare/x6_y3.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> TurboEdit </p>
+                                        <img src="./static/res/compare/x7_y3.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> Break-A-Scene </p>
+                                        <img src="./static/res/compare/x8_y3.jpg"/>
+                                    </div>
+                                    <!-- q2 no need, too much-->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- compare 4 -->
+                        <div class="container columns is-centered">
+                            <div class="column
+                             is-one-quarter-desktop
+                             is-one-quarter-tablet
+                             compare-img">
+                                <div class="columns is-mobile static-group">
+                                    <div class="column">
+                                        <p class="has-text-centered"> Source Image </p>
+                                        <img src="./static/res/compare/x1_y4.jpg"/>
+                                        <p class="has-text-centered"> blow cake </p>
+                                    </div>
+                                    <div class="column">
+                                        <p class="has-text-centered"> Ours </p>
+                                        <img src="./static/res/compare/x9_y4.jpg"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> eat cake </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <div class="main-carousel"
+                                data-flickity='{ 
+                                    "cellAlign": "left",
+                                    "contain": true,
+                                    "freeScroll": true,
+                                    "wrapAround": true,
+                                    "autoPlay": true,
+                                    "imagesLoaded": true,
+                                    "lazyLoad": true
+                                }'>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> NTI </p>
+                                        <img src="./static/res/compare/x2_y4.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> InstructPix2Pix </p>
+                                        <img src="./static/res/compare/x3_y4.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> SVDiff </p>
+                                        <img src="./static/res/compare/x4_y4.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> InfEdit </p>
+                                        <img src="./static/res/compare/x5_y4.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> CDS </p>
+                                        <img src="./static/res/compare/x6_y4.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> TurboEdit </p>
+                                        <img src="./static/res/compare/x7_y4.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> Break-A-Scene </p>
+                                        <img src="./static/res/compare/x8_y4.jpg"/>
+                                    </div>
+                                    <!-- q2 no need, too much-->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- compare 5 -->
+                        <div class="container columns is-centered">
+                            <div class="column
+                             is-one-quarter-desktop
+                             is-one-quarter-tablet
+                             compare-img">
+                                <div class="columns is-mobile static-group">
+                                    <div class="column">
+                                        <p class="has-text-centered"> Source Image </p>
+                                        <img src="./static/res/compare/x1_y5.jpg"/>
+                                        <p class="has-text-centered"> hold skateboard </p>
+                                    </div>
+                                    <div class="column">
+                                        <p class="has-text-centered"> Ours </p>
+                                        <img src="./static/res/compare/x9_y5.jpg"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> jump skateboard </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <div class="main-carousel"
+                                data-flickity='{ 
+                                    "cellAlign": "left",
+                                    "contain": true,
+                                    "freeScroll": true,
+                                    "wrapAround": true,
+                                    "autoPlay": true,
+                                    "imagesLoaded": true,
+                                    "lazyLoad": true
+                                }'>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> NTI </p>
+                                        <img src="./static/res/compare/x2_y5.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> InstructPix2Pix </p>
+                                        <img src="./static/res/compare/x3_y5.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> SVDiff </p>
+                                        <img src="./static/res/compare/x4_y5.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> InfEdit </p>
+                                        <img src="./static/res/compare/x5_y5.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> CDS </p>
+                                        <img src="./static/res/compare/x6_y5.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> TurboEdit </p>
+                                        <img src="./static/res/compare/x7_y5.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> Break-A-Scene </p>
+                                        <img src="./static/res/compare/x8_y5.jpg"/>
+                                    </div>
+                                    <!-- q2 no need, too much-->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- compare 6 -->
+                        <div class="container columns is-centered">
+                            <div class="column
+                             is-one-quarter-desktop
+                             is-one-quarter-tablet
+                             compare-img">
+                                <div class="columns is-mobile static-group">
+                                    <div class="column">
+                                        <p class="has-text-centered"> Source Image </p>
+                                        <img src="./static/res/compare/x1_y6.jpg"/>
+                                        <p class="has-text-centered"> hold skateboard </p>
+                                    </div>
+                                    <div class="column">
+                                        <p class="has-text-centered"> Ours </p>
+                                        <img src="./static/res/compare/x9_y6.jpg"/>
+                                        <p style="color:#F97316;" class="has-text-centered"> ride skateboard </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <div class="main-carousel"
+                                data-flickity='{ 
+                                    "cellAlign": "left",
+                                    "contain": true,
+                                    "freeScroll": true,
+                                    "wrapAround": true,
+                                    "autoPlay": true,
+                                    "imagesLoaded": true,
+                                    "lazyLoad": true
+                                }'>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> NTI </p>
+                                        <img src="./static/res/compare/x2_y6.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> InstructPix2Pix </p>
+                                        <img src="./static/res/compare/x3_y6.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> SVDiff </p>
+                                        <img src="./static/res/compare/x4_y6.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> InfEdit </p>
+                                        <img src="./static/res/compare/x5_y6.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> CDS </p>
+                                        <img src="./static/res/compare/x6_y6.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> TurboEdit </p>
+                                        <img src="./static/res/compare/x7_y6.jpg"/>
+                                    </div>
+                                    <div class="carousel-cell compare-img">
+                                        <p class="has-text-centered"> Break-A-Scene </p>
+                                        <img src="./static/res/compare/x8_y6.jpg"/>
+                                    </div>
+                                    <!-- q2 no need, too much-->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- <h3 class="title">Qualitative Results</h3>
+                        <p class="subtitle has-text-centered" style="font-size: 16px;">
+                            Comparison of InteractEdit with existing baselines in terms of HOI editability evaluated on IEBench.
+                        </p>
+                        <img id="quantitative" autoplay muted loop playsinline height="75%"
+                            src="./static/res/quantitative.jpg" style="width:auto;height:75%;"> -->
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+    <!-- Abstract -->
+    <section class="section">
+        <div class="container is-max-desktop">
+            <!-- Abstract. -->
+            <div class="columns is-centered has-text-centered">
+                <div class="column is-four-fifths">
+                    <h2 class="title is-3">Abstract</h2>
+                    <div class="content has-text-justified">
+                        <p>
+                            This paper presents InteractEdit, a novel framework for zero-shot Human-Object Interaction (HOI) editing,
+                             addressing the challenging task of transforming an existing interaction in an image into a new, desired
+                              interaction while preserving the identities of the subject and object. Unlike simpler image editing 
+                              scenarios such as attribute manipulation, object replacement or style transfer, HOI editing involves 
+                              complex spatial, contextual, and relational dependencies inherent in humans-objects interactions. 
+                              Existing methods often overfit to the source image structure, limiting their ability to adapt to the 
+                              substantial structural modifications demanded by new interactions. To address this, InteractEdit 
+                              decomposes each scene into subject, object, and background components, then employs Low-Rank Adaptation 
+                              (LoRA) and selective fine-tuning to preserve pretrained interaction priors while learning the visual 
+                              identity of the source image. This regularization strategy effectively balances interaction edits with 
+                              identity consistency. We further introduce IEBench, the most comprehensive benchmark for HOI editing, 
+                              which evaluates both interaction editing and identity preservation. Our extensive experiments show that 
+                              InteractEdit significantly outperforms existing methods, establishing a strong baseline for future HOI 
+                              editing research and unlocking new possibilities for creative and practical applications.
+                        </p>
+                    </div>
+                    <!-- <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/Uunzufq8m6Y?si=uQdzbwDSAg6oRsBP"
+                            title="YouTube video player" frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen></iframe>
+                    </div> -->
+                </div>
+            </div>
+            <!--/ Abstract. -->
+
+            <!-- Paper video. -->
+            <!-- <div class="columns is-centered has-text-centered">
+          <div class="column is-four-fifths">
+            <h2 class="title is-3">Video</h2>
+            <div class="publication-video">
+              <iframe src="https://www.youtube.com/embed/MrKrnHhk8IA?rel=0&amp;showinfo=0"
+                      frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
+          </div>
+        </div> -->
+
+            <!--/ Paper video.  <span class="dnerf">InteractDiffusion<\span> -->
+        </div>
+    </section>
+    <!-- Method -->
+    <section class="section" id="Method">
+        <div class="container is-max-desktop content">
+            <h2 class="title">Method</h2>
+            <section class="hero method">
+                <div class="container is-max-desktop">
+                    <div class="hero-body has-text-justified">
+                        <img id="arch" autoplay muted loop playsinline height="100%" src="./static/res/arch.jpg"
+                            style="width:100%;height:100%;">
+                        <p>
+                            HOI components are disassembled into subject, object, and background clues during inversion. 
+                            LoRA regularization enables non-rigid edits by capturing essential attributes while ignoring
+                             fine-grained structural details. Selective fine-tuning preserves interaction priors while 
+                             adapting to the source image&#39;s identity. Editing reassembles these components with the 
+                             target interaction, using trained LoRA weights to guide the diffusion model.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    <!-- Related Links-->
+    <section class="section" id='RelatedLinks'>
+        <div class="container is-max-desktop content">
+            <h2 class="title">Related Links</h2>
+
+            <ul>
+                <li><a href="https://jiuntian.github.io/interactdiffusion/">InteractDiffusion: Interaction Control in
+                    Text-to-Image Diffusion Models</a></li>
+                <li><a href="https://omriavrahami.com/break-a-scene/">Break-A-Scene: Extracting Multiple Concepts from a Single Image</a></li>
+                <li><a href="https://arxiv.org/abs/2307.01952">SDXL: Improving Latent Diffusion Models for High-Resolution Image Synthesis</a></li>
+            </ul>
+
+        </div>
+    </section>
+
+
+    <section class="section" id="BibTeX">
+        <div class="container is-max-desktop content">
+            <h2 class="title">BibTeX</h2>
+            <p> If you use our work in your research, please cite: </p>
+<pre><code>
+TODO
+</code></pre>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="content has-text-centered">
+                <a class="icon-link" href="https://arxiv.org/pdf/TODO.pdf">
+                    <i class="fas fa-file-pdf"></i>
+                </a>
+                <a class="icon-link" href="https://github.com/jiuntian/interactedit" class="external-link"
+                    disabled>
+                    <i class="fab fa-github"></i>
+                </a>
+            </div>
+            <div class="columns is-centered">
+                <div class="column is-8">
+                    <div class="content">
+                        <p>
+                            Website adapted from <a href="https://disco-dance.github.io">DisCo</a> and <a
+                                href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flickity/3.0.0/flickity.pkgd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="./static/js/index.js"></script>
+</body>
+
+</html>
