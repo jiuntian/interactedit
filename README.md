@@ -81,6 +81,9 @@ We will release IEBench benchmark together with code release.
 - [ ] Gradio demo
 - [ ] Diffuser code release
 
+## Related Works
+1. [[CVPR24] InteractDiffusion: Interaction-Control for Text-to-Image Diffusion Model](https://github.com/jiuntian/interactdiffusion)
+
 ## Citation
 
 ```bibtex
